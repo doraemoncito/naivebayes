@@ -16,7 +16,6 @@
  */
 package org.doraemoncito.naivebayes.loaders;
 
-import com.opencsv.CSVReader;
 import com.opencsv.bean.CsvToBeanBuilder;
 import org.doraemoncito.naivebayes.LabelledInstance;
 
