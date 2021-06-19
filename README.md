@@ -1,4 +1,4 @@
-# Naive Bayes classifier
+# [Naive Bayes classifier](https://doraemoncito.github.io/naivebayes/)
 
 A simple Naive Bayes classifier written in Java
 
