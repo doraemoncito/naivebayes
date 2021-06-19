@@ -1,37 +1,19 @@
-## Welcome to GitHub Pages
+# Naïve Bayes Classifier
 
-You can use the [editor on GitHub](https://github.com/doraemoncito/naivebayes/edit/gh-pages/docs/index.md) to maintain and preview the content for your website in Markdown files.
+The Naïve Bayes application described in this page is a Java implementation of a multi-class Naïve Bayesian classifier for the classification of newsgroup messages but the implementation can be used to detect spam by restricting it to two classes.  A description of the algorithm can be found in the [Machine Learning book](http://www.cs.cmu.edu/afs/cs.cmu.edu/user/mitchell/ftp/mlbook.html) by [Tom Mitchell](http://www.cs.cmu.edu/~tom/) (Published by McGraw-Hill. ISBN: 0071154671).
 
-Whenever you commit to this repository, GitHub Pages will run [Jekyll](https://jekyllrb.com/) to rebuild the pages in your site, from the content in your Markdown files.
+The program works by feeding some sample newsgroup messages (training data set) into the Naïve Bayes learning algorithm to build a probability table describing the chance of a particular word appearing in a document of a given class. The basic premise is that certain words are more likely than others to appear in a given newsgroup.  I.e. the word “windows” is more likely to appear in a Microsoft Windows programming newsgroup than in a politics newsgroup.  Once the target concept has been learned, the classifier is able to calculate the probability that a given but previously unseen message belongs to a particular newsgroup.
 
-### Markdown
+The accuracy of the classification process can be improved by removing stop words, i.e. generic words that are equally likely to appear in any newsgroup. These are typically adverbs, articles, prepositions, etc. that help string sentences together but carry no context specific value.
 
-Markdown is a lightweight and easy-to-use syntax for styling your writing. It includes conventions for
+Removal of infrequently occurring words can also increase the accuracy of the classification.  The reason behind this is that infrequent words do not add any significant value to the probability of identifying a particular class unless groups of them happen to always appear in the same newsgroup.
 
-```markdown
-Syntax highlighted code block
+Another way of improving classification results is to use lemmatization or stemming to group together words with common characteristics.
 
-# Header 1
-## Header 2
-### Header 3
+To enable all these features when running the program, simply invoke it with the options shown below.  This example assumes you have unpacked the contents of the zip file to a new directory and are running the program from the root of that directory:
 
-- Bulleted
-- List
-
-1. Numbered
-2. List
-
-**Bold** and _Italic_ and `Code` text
-
-[Link](url) and ![Image](src)
+```shell
+java -jar naivebayes.jar --newsgroups mini_newsgroups --use-stemmer --stop-words stop_words.txt --prune-level 3
 ```
 
-For more details see [GitHub Flavored Markdown](https://guides.github.com/features/mastering-markdown/).
-
-### Jekyll Themes
-
-Your Pages site will use the layout and styles from the Jekyll theme you have selected in your [repository settings](https://github.com/doraemoncito/naivebayes/settings/pages). The name of this theme is saved in the Jekyll `_config.yml` configuration file.
-
-### Support or Contact
-
-Having trouble with Pages? Check out our [documentation](https://docs.github.com/categories/github-pages-basics/) or [contact support](https://support.github.com/contact) and we’ll help you sort it out.
+The source code and sample data are availble dow download from [this GitHub repository](https://github.com/doraemoncito/naivebayes).
