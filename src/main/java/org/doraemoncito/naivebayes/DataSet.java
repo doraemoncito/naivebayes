@@ -12,19 +12,23 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Copyright (c) 2003-2019 Jose Hernandez
+ * Copyright (c) 2003-2026 Jose Hernandez
  */
 package org.doraemoncito.naivebayes;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.extern.slf4j.Slf4j;
 
 import java.util.*;
 import java.util.stream.Collectors;
 
-public class DataSet implements Cloneable {
+/**
+ * Represents a dataset of labelled instances.
+ * Stores instances and statistics about the dataset, such as label frequencies.
+ * Provides methods for dataset manipulation like splitting into folds for cross-validation and shuffling.
+ */
+@Slf4j
+public class DataSet {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(DataSet.class);
 
     private List<LabelledInstance> labelledInstances;
     private Map<String, Long> labelFrequencyTable;
@@ -36,23 +40,19 @@ public class DataSet implements Cloneable {
         labelFrequencyTable = buildClassLabelTable(labelledInstances);
     }
 
-    @Override
-    public DataSet clone() {
-        try {
-            DataSet clonedSamples = (DataSet) super.clone();
-            clonedSamples.labelledInstances = (List<LabelledInstance>) ((ArrayList<LabelledInstance>) labelledInstances).clone();
-            clonedSamples.labelFrequencyTable = (Map<String, Long>) ((HashMap<String, Long>) labelFrequencyTable).clone();
+    public DataSet(DataSet other) {
+        this.labelledInstances = new ArrayList<>(other.labelledInstances);
+        this.labelFrequencyTable = new HashMap<>(other.labelFrequencyTable);
+    }
 
-            return clonedSamples;
-        } catch (CloneNotSupportedException e) {
-            return null;
-        }
+    public DataSet copy() {
+        return new DataSet(this);
     }
 
     public DataSet shuffle() {
-        DataSet shuffled_samples = clone();
-        Collections.shuffle(shuffled_samples.labelledInstances);
-        return shuffled_samples;
+        DataSet shuffledSamples = copy();
+        Collections.shuffle(shuffledSamples.labelledInstances);
+        return shuffledSamples;
     }
 
     /**
@@ -62,12 +62,12 @@ public class DataSet implements Cloneable {
      */
     private Map<String, Long> buildClassLabelTable(final List<LabelledInstance> labelledInstances) {
         return labelledInstances.stream()
-                .map(LabelledInstance::getClassLabel)
+                .map(LabelledInstance::classLabel)
                 .collect(Collectors.groupingBy(e -> e, Collectors.counting()));
     }
 
     public DataSet getTrainingSet(final int fold) {
-        DataSet trainingSet = clone();
+        DataSet trainingSet = copy();
         trainingSet.labelledInstances.removeAll(getFold(fold));
         trainingSet.labelFrequencyTable = trainingSet.buildClassLabelTable(trainingSet.labelledInstances);
 
@@ -76,7 +76,7 @@ public class DataSet implements Cloneable {
 
     public DataSet getTestSet(final int fold) {
 
-        DataSet testSet = this.clone();
+        DataSet testSet = this.copy();
         testSet.labelledInstances = getFold(fold);
         testSet.labelFrequencyTable = testSet.buildClassLabelTable(testSet.labelledInstances);
 
@@ -84,7 +84,7 @@ public class DataSet implements Cloneable {
     }
 
     private ArrayList<LabelledInstance> getFold(final int fold) {
-        DataSet testSet = this.clone();
+        DataSet testSet = this.copy();
         ArrayList<LabelledInstance> subset = new ArrayList<>();
         int numSlots = size() / 10;
 
@@ -96,7 +96,7 @@ public class DataSet implements Cloneable {
     }
 
     public DataSet getClassLabelSet(final String classLabel) {
-        DataSet classifierSet = this.clone();
+        DataSet classifierSet = this.copy();
         ArrayList<LabelledInstance> keepList = new ArrayList<>();
 
         for (int i = 0; i < classifierSet.labelledInstances.size(); i++) {
@@ -116,13 +116,13 @@ public class DataSet implements Cloneable {
     }
 
     public String getLabel(int index) {
-        return labelledInstances.get(index).getClassLabel();
+        return labelledInstances.get(index).classLabel();
     }
 
     /**
      * Counts the number of documents in this example set that belong to the given classification.
      *
-     * @param classLabel
+     * @param classLabel the classification to count documents for
      * @return number of messages belonging to the particular classLabel / class
      */
     public long getLabelCount(final String classLabel) {

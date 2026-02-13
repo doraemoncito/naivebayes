@@ -16,7 +16,10 @@
  */
 package org.doraemoncito.naivebayes;
 
-import java.io.*;
+import java.io.BufferedWriter;
+import java.io.FileWriter;
+import java.io.IOException;
+import java.io.Serial;
 import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -32,20 +35,20 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class Vocabulary extends ConcurrentHashMap<String, Integer> {
 
+    @Serial
     private static final long serialVersionUID = 1L;
 
     /**
-     * Construct a vocabulary from the given samples ignoring all the stop words.
+     * Construct vocabulary from the given samples ignoring all the stop words.
      *
-     * @param samples
-     * @param stopWords
-     * @param pruneLevel
-     * @param useStemmer
-     * @throws FileNotFoundException
-     * @throws IOException
+     * @param samples    the dataset containing the samples to build the vocabulary from
+     * @param stopWords  a list of words to be ignored and excluded from the vocabulary
+     * @param pruneLevel the threshold for pruning words; words occurring less than this number of times will be removed
+     * @param useStemmer boolean flag indicating whether to use stemming
+     * @throws IOException           if an I/O error occurs during processing
      */
     public Vocabulary(final DataSet samples, List<String> stopWords, final int pruneLevel, final boolean useStemmer)
-            throws FileNotFoundException, IOException {
+            throws IOException {
 
         // Add the words from each example in turn to the vocabulary
         int numSamples = samples.size();
@@ -54,7 +57,7 @@ public class Vocabulary extends ConcurrentHashMap<String, Integer> {
 
             LabelledInstance labelledInstance = samples.getLabelledInstance(i);
 
-            Map<String, Integer> tokenMap = new MessageTokenizer(useStemmer, labelledInstance.getText()).getTokenList();
+            Map<String, Integer> tokenMap = new MessageTokenizer(useStemmer, labelledInstance.text()).getTokenList();
 
             for (java.util.Map.Entry<String, Integer> entry : tokenMap.entrySet()) {
                 String word = entry.getKey();
@@ -81,6 +84,7 @@ public class Vocabulary extends ConcurrentHashMap<String, Integer> {
         }
     }
 
+    @Override
     public String toString() {
         StringBuilder stringBuffer = new StringBuilder();
 
@@ -115,18 +119,17 @@ public class Vocabulary extends ConcurrentHashMap<String, Integer> {
     }
 
     public void saveToFile(String filename) throws IOException {
-        BufferedWriter out = new BufferedWriter(new FileWriter(new File(filename)));
-        DecimalFormat decimalFormat = new DecimalFormat("0000");
+        try (BufferedWriter out = new BufferedWriter(new FileWriter(filename))) {
+            DecimalFormat decimalFormat = new DecimalFormat("0000");
 
-        for (String word : getWordList()) {
-            Integer frequency = get(word);
-            if (null != frequency) {
-                out.write(decimalFormat.format(frequency.intValue()) + " " + word);
-                out.newLine();
+            for (String word : getWordList()) {
+                Integer frequency = get(word);
+                if (null != frequency) {
+                    out.write(decimalFormat.format(frequency.intValue()) + " " + word);
+                    out.newLine();
+                }
             }
         }
-
-        out.close();
     }
 
 }

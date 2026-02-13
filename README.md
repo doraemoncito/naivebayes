@@ -2,13 +2,43 @@
 
 A simple Naive Bayes classifier written in Java
 
+## Building
+
 Build with:
 
-    mvn clean install
+    mvn clean package
     
-and run with
+## Running
 
-    ./target/naivebayes-1.0-SNAPSHOT-spring-boot.jar --newsgroups ../src/test/resources/mini_newsgroups --use-stemmer --stop-words ../src/main/resources/stop_words.txt --prune-level 3
+You can run the application in several ways:
+
+### Using the executable script (recommended):
+
+    ./naivebayes.sh --newsgroups=src/test/resources/mini_newsgroups --use-stemmer=true --stop-words=src/main/resources/stop_words.txt --prune-level=3
+
+### Using java -jar directly:
+
+    java -jar target/naivebayes-1.0-SNAPSHOT.jar --newsgroups=src/test/resources/mini_newsgroups --use-stemmer=true --stop-words=src/main/resources/stop_words.txt --prune-level=3
+
+### Directly executing the JAR (Unix/Linux/Mac):
+
+After building, make the JAR executable:
+
+    chmod +x target/naivebayes-1.0-SNAPSHOT.jar
+
+Then run it directly:
+
+    ./target/naivebayes-1.0-SNAPSHOT.jar --newsgroups=src/test/resources/mini_newsgroups
+
+## Command Line Options
+
+The application uses Spring Boot's built-in command line property handling. Arguments are specified in the format `--property=value`:
+
+- `--newsgroups=<path>` - Path to newsgroups directory (required if --csv not specified)
+- `--csv=<path>` - Path to CSV file (required if --newsgroups not specified)
+- `--stop-words=<path>` - Path to stop words file (optional)
+- `--prune-level=<number>` - Prune words with frequency lower than this value (default: 0)
+- `--use-stemmer=<true|false>` - Enable Porter stemming algorithm (default: false)
 
 A sample run on the supplied test data will yield results along these lines:
 

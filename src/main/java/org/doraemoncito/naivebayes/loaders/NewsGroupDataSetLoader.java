@@ -12,13 +12,12 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Copyright (c) 2003-2019 Jose Hernandez
+ * Copyright (c) 2003-2026 Jose Hernandez
  */
 package org.doraemoncito.naivebayes.loaders;
 
+import lombok.extern.slf4j.Slf4j;
 import org.doraemoncito.naivebayes.LabelledInstance;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -28,11 +27,16 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
-public class NewsGroupDataSetLoader implements Cloneable {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(NewsGroupDataSetLoader.class);
+/**
+ * Loader for newsgroup datasets.
+ * Reads a directory structure where each subdirectory represents a category (newsgroup)
+ * and contains text files belonging to that category.
+ */
+@Slf4j
+public class NewsGroupDataSetLoader {
 
     /**
+     * Read label instances
      * Read label instances
      *
      * @param file File object representing the directory at the top of the hierarchy
@@ -42,11 +46,11 @@ public class NewsGroupDataSetLoader implements Cloneable {
         if (file.isDirectory()) {
             return parseDirectory(file, new ArrayList<>());
         } else {
-            throw new RuntimeException("Invalid parameter " + file.getCanonicalPath());
+            throw new IllegalArgumentException("Invalid parameter: " + file.getCanonicalPath() + " is not a directory.");
         }
     }
 
-    private List<LabelledInstance> parseDirectory(final File file, final List<LabelledInstance> instances) {
+    private List<LabelledInstance> parseDirectory(final File file, final List<LabelledInstance> instances) throws IOException {
         String[] dir = file.list();
 
         if (null != dir) {
@@ -55,17 +59,17 @@ public class NewsGroupDataSetLoader implements Cloneable {
                 try {
                     File localfile = Paths.get(file.getCanonicalPath() + "/" + s).toFile();
 
-                    LOGGER.trace("Processing file '{}'", localfile.getAbsolutePath());
+                    log.trace("Processing file '{}'", localfile.getAbsolutePath());
 
                     if (localfile.isDirectory()) {
                         parseDirectory(localfile, instances);
                     } else if (localfile.isFile()) {
                         instances.add(parseFile(localfile));
                     } else {
-                        throw new RuntimeException("Unable to read data file: " + localfile.getName());
+                        throw new IOException("Unable to read data file: " + localfile.getName());
                     }
                 } catch (IOException e) {
-                    throw new RuntimeException("Unable to read data file: " + file.getName());
+                    throw new IOException("Unable to read data file: " + file.getName(), e);
                 }
             }
         }
@@ -93,24 +97,24 @@ public class NewsGroupDataSetLoader implements Cloneable {
     }
 
     /**
-     * Advances the file pointer to the first character passed the document header.
+     * Advances the file pointer to the first character past the document header.
      * <p>
      * Some documents may contain headers which should be stripped before the document is processed. Subclasses should
      * re-implement this method if the document instance contains a discardable header. The default implementation
      * doesn't do anything.
      *
-     * @param InputFile document containing a header.
-     * @throws IOException
+     * @param reader the BufferedReader reading the file
+     * @throws IOException if an error occurs while reading
      */
-    private void skipPastClassLabel(BufferedReader InputFile) throws IOException {
-        String MessageLine;
+    private void skipPastClassLabel(final BufferedReader reader) throws IOException {
+        String messageLine;
 
         /*
-         * In newsgroup message the body is separated from the header by a single blank line so we need to move the file
-         * pointer to just after the blank line.
+         * In the newsgroup message the body is separated from the header by a single blank line, so we need to move
+         * the file pointer to just after the blank line.
          */
-        while (null != (MessageLine = InputFile.readLine())) {
-            if (MessageLine.equals("")) {
+        while (null != (messageLine = reader.readLine())) {
+            if (messageLine.isEmpty()) {
                 break;
             }
         }

@@ -12,25 +12,41 @@
  * You should have received a copy of the GNU General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  *
- * Copyright (c) 2003-2019 Jose Hernandez
+ * Copyright (c) 2003-2026 Jose Hernandez
  */
 package org.doraemoncito.naivebayes.loaders;
 
-import com.opencsv.CSVReader;
+import org.apache.commons.csv.CSVFormat;
+import org.apache.commons.csv.CSVParser;
+import org.apache.commons.csv.CSVRecord;
 
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.Reader;
 import java.util.List;
-import java.util.stream.Collectors;
 
+/**
+ * Loader for stop words.
+ * Reads a text file containing stop words (one per line or comma-separated) and returns them as a list.
+ */
 public class StopWordLoader {
 
+    /**
+     * Reads the given file containing stop words.
+     *
+     * @param file the file to read
+     * @return a list of stop words
+     * @throws IOException if an I/O error occurs while reading the file
+     */
     public List<String> read(final File file) throws IOException {
+        try (Reader reader = new FileReader(file);
+             CSVParser csvParser = new CSVParser(reader, CSVFormat.DEFAULT)) {
 
-        return new CSVReader(new FileReader(file)).readAll().stream()
-                .map(array -> array[0])
-                .collect(Collectors.toList());
+            return csvParser.getRecords().stream()
+                    .map(record -> record.get(0))
+                    .toList();
+        }
     }
 
 }

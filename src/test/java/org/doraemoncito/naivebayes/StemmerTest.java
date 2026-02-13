@@ -1,7 +1,8 @@
 package org.doraemoncito.naivebayes;
 
-import static org.junit.Assert.assertNotNull;
-import static org.junit.Assert.fail;
+import lombok.extern.slf4j.Slf4j;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -13,14 +14,11 @@ import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
 
-import org.junit.Ignore;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.fail;
 
-public class StemmerTest {
-
-	private static final Logger LOGGER = LoggerFactory.getLogger(StemmerTest.class);
+@Slf4j
+class StemmerTest {
 
 	private String[] toArray(String... filepaths) {
 		return filepaths;
@@ -37,60 +35,60 @@ public class StemmerTest {
 		List<String> result = new ArrayList<>();
 		char[] w = new char[501];
 		Stemmer s = new Stemmer();
-		for (int i = 0; i < filepaths.length; i++) {
-			try (FileInputStream in = new FileInputStream(filepaths[i])) {
+        for (String filepath : filepaths) {
+            try (FileInputStream in = new FileInputStream(filepath)) {
 
-				try {
-					while (true) {
-						int ch = in.read();
-						if (Character.isLetter((char) ch)) {
-							int j = 0;
-							while (true) {
-								ch = Character.toLowerCase((char) ch);
-								w[j] = (char) ch;
-								if (j < 500)
-									j++;
-								ch = in.read();
-								if (!Character.isLetter((char) ch)) {
-									/* to test add(char ch) */
-									for (int c = 0; c < j; c++)
-										s.add(w[c]);
+                try {
+                    while (true) {
+                        int ch = in.read();
+                        if (Character.isLetter((char) ch)) {
+                            int j = 0;
+                            while (true) {
+                                ch = Character.toLowerCase((char) ch);
+                                w[j] = (char) ch;
+                                if (j < 500)
+                                    j++;
+                                ch = in.read();
+                                if (!Character.isLetter((char) ch)) {
+                                    /* to test add(char ch) */
+                                    for (int c = 0; c < j; c++)
+                                        s.add(w[c]);
 
-									/* or, to test add(char[] w, int j) */
-									/* s.add(w, j); */
+                                    /* or, to test add(char[] w, int j) */
+                                    /* s.add(w, j); */
 
-									s.stem();
-									{
-										String u;
+                                    s.stem();
+                                    {
+                                        String u;
 
-										/* and now, to test toString() : */
-										u = s.toString();
+                                        /* and now, to test toString() : */
+                                        u = s.toString();
 
-										/* to test getResultBuffer(), getResultLength() : */
-										/* u = new String(s.getResultBuffer(), 0, s.getResultLength()); */
+                                        /* to test getResultBuffer(), getResultLength() : */
+                                        /* u = new String(s.getResultBuffer(), 0, s.getResultLength()); */
 
-										result.add(u);
-									}
-									break;
-								}
-							}
-						}
-						if (ch < 0)
-							break;
-						System.out.print((char) ch); //XXX
-					}
-				} catch (IOException e) {
-					LOGGER.error("error reading {}", filepaths[i], e);
-					throw new RuntimeException(e);
-				}
-			} catch (FileNotFoundException e) {
-				LOGGER.error("file {} not found", filepaths[i], e);
-				throw new IllegalArgumentException(e);
-			} catch (IOException e) {
-				LOGGER.error("IO exception whilst stemming", e);
-				throw new RuntimeException(e);
-			}
-		}
+                                        result.add(u);
+                                    }
+                                    break;
+                                }
+                            }
+                        }
+                        if (ch < 0)
+                            break;
+                        System.out.print((char) ch); //XXX
+                    }
+                } catch (IOException e) {
+                    log.error("error reading {}", filepath, e);
+                    throw new RuntimeException(e);
+                }
+            } catch (FileNotFoundException e) {
+                log.error("file {} not found", filepath, e);
+                throw new IllegalArgumentException(e);
+            } catch (IOException e) {
+                log.error("IO exception whilst stemming", e);
+                throw new RuntimeException(e);
+            }
+        }
 		return result;
 	}
 	
@@ -100,12 +98,12 @@ public class StemmerTest {
 			Path resourcePath = Paths.get(resourceUrl.toURI());
 			return resourcePath.toAbsolutePath().toString();
 		} catch (URISyntaxException | NullPointerException e) {
-			LOGGER.error("Resource '{}' could not be found in the classpath", resourceName, e);
+			log.error("Resource '{}' could not be found in the classpath", resourceName, e);
 			throw new IllegalArgumentException(String.format("Resource '%s' could not be found in the classpath", resourceName), e);
 		}
 	}
 
-	@Ignore
+	@Disabled
 	@Test
 	public void testStemmer() {
 		List<String> actualResult = stemmerHelper(toArray(getResourcePath("stemmer/stemmer_voc.txt")));

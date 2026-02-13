@@ -16,7 +16,6 @@
  */
 package org.doraemoncito.naivebayes;
 
-import java.io.IOException;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -27,14 +26,16 @@ import java.util.concurrent.ConcurrentHashMap;
  */
 public class MessageTokenizer {
 
-    private Map<String, Integer> wordFrecuencyTable = new ConcurrentHashMap<>();
+    private final Map<String, Integer> wordFrequencyTable = new ConcurrentHashMap<>();
 
-    /*
-     * TODO: pass in (inject) a stemmer object.  When stemming is not required with pass in a passthrough stemmer.
-     * Can we use a lambda here for the stemmer?
+    /**
+     * Constructs a MessageTokenizer and processes the input string.
+     *
+     * @param useStemmer boolean flag indicating whether to use stemming
+     * @param string     the input string to tokenize
      */
-    public MessageTokenizer(boolean useStemmer, String string) throws IOException {
-        string = string.replaceAll("(-|=|\\|)", " ");
+    public MessageTokenizer(boolean useStemmer, String string) {
+        string = string.replaceAll("[-=|]", " ");
         String[] wordArray = string.toLowerCase().split("\\s");
 
         for (int i = 0; i < wordArray.length; i++) {
@@ -46,12 +47,18 @@ public class MessageTokenizer {
                     wordArray[i] = stemWord(wordArray[i]);
                 }
 
-                int frequency = wordFrecuencyTable.getOrDefault(wordArray[i], 0);
-                wordFrecuencyTable.put(wordArray[i], frequency + 1);
+                int frequency = wordFrequencyTable.getOrDefault(wordArray[i], 0);
+                wordFrequencyTable.put(wordArray[i], frequency + 1);
             }
         }
     }
 
+    /**
+     * Stems a given word using the Porter Stemmer algorithm.
+     *
+     * @param word the word to stem
+     * @return the stemmed word
+     */
     private String stemWord(String word) {
         Stemmer stemmer = new Stemmer();
         stemmer.add(word.toCharArray(), word.length());
@@ -59,16 +66,26 @@ public class MessageTokenizer {
         return stemmer.toString();
     }
 
+    /**
+     * Returns the map of tokens and their frequencies.
+     *
+     * @return a map where the key is the token and the value is its frequency count
+     */
     public Map<String, Integer> getTokenList() {
-        return wordFrecuencyTable;
+        return wordFrequencyTable;
     }
 
+    /**
+     * Returns a string representation of the tokenized words.
+     *
+     * @return a space-separated string of tokens
+     */
     public String toString() {
-        String[] stringArray = wordFrecuencyTable.keySet().toArray(new String[wordFrecuencyTable.size()]);
-        StringBuffer stringBuffer = new StringBuffer();
+        String[] stringArray = wordFrequencyTable.keySet().toArray(new String[0]);
+        StringBuilder stringBuffer = new StringBuilder();
 
-        for (int i = 0; i < stringArray.length; i++) {
-            stringBuffer.append(stringArray[i]).append(" ");
+        for (String s : stringArray) {
+            stringBuffer.append(s).append(" ");
         }
 
         return stringBuffer.toString();

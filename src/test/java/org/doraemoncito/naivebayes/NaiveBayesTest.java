@@ -16,7 +16,13 @@
  */
 package org.doraemoncito.naivebayes;
 
-import static org.junit.Assert.fail;
+import lombok.extern.slf4j.Slf4j;
+import org.doraemoncito.naivebayes.loaders.CsvDataSetLoader;
+import org.doraemoncito.naivebayes.loaders.NewsGroupDataSetLoader;
+import org.doraemoncito.naivebayes.loaders.StopWordLoader;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Disabled;
+import org.junit.jupiter.api.Test;
 
 import java.io.File;
 import java.io.IOException;
@@ -27,29 +33,24 @@ import java.nio.file.Paths;
 import java.util.List;
 import java.util.Objects;
 
-import org.doraemoncito.naivebayes.loaders.CsvDataSetLoader;
-import org.doraemoncito.naivebayes.loaders.NewsGroupDataSetLoader;
-import org.doraemoncito.naivebayes.loaders.StopWordLoader;
-import org.junit.Ignore;
-import org.junit.Test;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import static org.junit.jupiter.api.Assertions.fail;
 
-public class NaiveBayesTest {
+@Slf4j
+class NaiveBayesTest {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(NaiveBayesTest.class);
     private static final String STOP_WORDS_FILE_NAME = "stop_words.txt";
 
     private List<String> stopWords;
 
-    public void setup() throws IOException {
+    @BeforeEach
+    void setup() throws IOException {
         ClassLoader classLoader = getClass().getClassLoader();
         File stopWordsFile = new File(Objects.requireNonNull(classLoader.getResource(STOP_WORDS_FILE_NAME)).getFile());
         stopWords = new StopWordLoader().read(stopWordsFile);
     }
 
     @Test
-    public void testClassifyNewsGroups() {
+    void testClassifyNewsGroups() {
         URL newsgroupsURL = getClass().getResource("/mini_newsgroups");
         try {
             Path newsgroupsPath = Paths.get(newsgroupsURL.toURI());
@@ -58,14 +59,14 @@ public class NaiveBayesTest {
             final DataSet samples = new DataSet(labelledInstances);
             new NaiveBayes(samples, stopWords,3, true);
         } catch (URISyntaxException | IOException e) {
-            LOGGER.error("Newsgroup classification failed", e);
+            log.error("Newsgroup classification failed", e);
             fail(String.format("Newsgroup classification failed: %s", e.getMessage()));
         }
     }
 
-    @Ignore
+    @Disabled
     @Test
-    public void testClassifyCsv() {
+    void testClassifyCsv() {
         URL csvURL = getClass().getResource("/csv/train.csv");
         try {
             Path csvPath = Paths.get(csvURL.toURI());
@@ -74,7 +75,7 @@ public class NaiveBayesTest {
             final DataSet samples = new DataSet(labelledInstances);
             new NaiveBayes(samples, stopWords,3, true);
         } catch (URISyntaxException | IOException e) {
-            LOGGER.error("CSV classification failed", e);
+            log.error("CSV classification failed", e);
             fail(String.format("CSV classification failed: %s", e.getMessage()));
         }
     }
